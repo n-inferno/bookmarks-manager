@@ -7,7 +7,8 @@ class UserModel(db.Model):
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     login = db.Column(db.String, nullable=False)
     password_hash = db.Column(db.String, nullable=False)
+    user_uuid = db.Column(db.String, nullable=False)
 
     @classmethod
-    def get_user(cls, login):
-        return cls.query.filter_by(login=login).first()
+    def get_user(cls, uuid):
+        return cls.query.filter_by(user_uuid=uuid).first()

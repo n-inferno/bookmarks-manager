@@ -1,10 +1,14 @@
 import os
 from datetime import datetime, timedelta
+from functools import wraps
+from time import time
 
 import jwt
+from flask import request
+from jwt import ExpiredSignatureError
+from werkzeug.exceptions import Unauthorized, Forbidden
 from werkzeug.security import check_password_hash
 
-from app import basic_auth
 from app.db_models.user_model import UserModel
 
 
@@ -15,16 +19,30 @@ def generate_token(user_uuid):
         'exp': now + timedelta(seconds=600),
         'uuid': user_uuid
     }
-    token = jwt.encode(token_data, os.environ.get('AUTH_STRING'), algorithm='HS256').decode('utf-8')
+    token = jwt.encode(token_data, os.environ.get('AUTH_STRING'), algorithm="HS256")
 
-    return token
+    return {'token': token}
 
 
-@basic_auth.verify_password
-def verify_password(login, password):
-    user = UserModel.get_user(login)
+def verify_token(token):
+    if not token:
+        return Unauthorized()
+    try:
+        token_data = jwt.decode(token, os.environ.get('AUTH_STRING'), algorithms=["HS256"])
+    except ExpiredSignatureError:
+        return Forbidden()
+    user = UserModel.get_user(token_data.get('uuid'))
     if not user:
-        return False
-    if not check_password_hash(user.password_hash, password):
-        return False
+        return Unauthorized()
+
     return True
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get("X-API")
+        if verify_token(token=token):
+            return f(*args, **kwargs)
+        return Unauthorized()
+    return decorated

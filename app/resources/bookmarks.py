@@ -23,7 +23,7 @@ class Bookmarks(Resource):
         bookmarks = db.session.query(BookmarkModel).all()
         return bookmarks
 
-    @bookmarks_namespace.marshal_with(bookmark_model_with_uuid)
+    @bookmarks_namespace.marshal_with(bookmark_model_with_uuid, code=201, description='Created')
     @bookmarks_namespace.expect(bookmark_model_base)
     def post(self):
         """create new bookmark"""
