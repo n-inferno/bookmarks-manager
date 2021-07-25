@@ -4,6 +4,7 @@ from werkzeug.exceptions import NotFound, BadRequest
 
 from app import api, db
 from app.db_models.bookmark_model import BookmarkModel
+from app.helpers.auth import token_required
 from app.marshaling_models.bookmarks import bookmark_model_base, bookmark_model_with_uuid
 
 
@@ -15,9 +16,11 @@ parser_link.add_argument('link', type=str, required=True, help='Link you want to
 bookmarks = []
 
 
-@bookmarks_namespace.route('/bookmarks')
+@bookmarks_namespace.route('')
 class Bookmarks(Resource):
     @bookmarks_namespace.marshal_with(bookmark_model_with_uuid)
+    @api.doc(security='apiKey')
+    @token_required
     def get(self):
         """get all bookmarks"""
         bookmarks = db.session.query(BookmarkModel).all()
@@ -25,6 +28,8 @@ class Bookmarks(Resource):
 
     @bookmarks_namespace.marshal_with(bookmark_model_with_uuid, code=201, description='Created')
     @bookmarks_namespace.expect(bookmark_model_base)
+    @api.doc(security='apiKey')
+    @token_required
     def post(self):
         """create new bookmark"""
         _ = parser_link.parse_args().get('link')
@@ -36,9 +41,11 @@ class Bookmarks(Resource):
         return new, 201
 
 
-@bookmarks_namespace.route('/bookmarks/<uuid>')
+@bookmarks_namespace.route('/<uuid>')
 class BookmarksByUUID(Resource):
     @bookmarks_namespace.marshal_with(bookmark_model_with_uuid)
+    @api.doc(security='apiKey')
+    @token_required
     def get(self, uuid):
         """get bookmark by uuid"""
         if uuid:
@@ -50,6 +57,8 @@ class BookmarksByUUID(Resource):
 
     @bookmarks_namespace.marshal_with(bookmark_model_with_uuid)
     @bookmarks_namespace.expect(bookmark_model_base)
+    @api.doc(security='apiKey')
+    @token_required
     def put(self, uuid):
         """update bookmark by uuid"""
         link = parser_link.parse_args().get('link')
@@ -63,6 +72,8 @@ class BookmarksByUUID(Resource):
 
     @bookmarks_namespace.marshal_with(bookmark_model_with_uuid)
     @bookmarks_namespace.expect(bookmark_model_base)
+    @api.doc(security='apiKey')
+    @token_required
     def patch(self, uuid):
         """edit bookmark by uuid"""
         data = request.json
@@ -74,6 +85,8 @@ class BookmarksByUUID(Resource):
         return bookmark
 
     @bookmarks_namespace.marshal_with(bookmark_model_with_uuid)
+    @api.doc(security='apiKey')
+    @token_required
     def delete(self, uuid):
         """delete bookmark by uuid"""
         bookmark = db.session.query(BookmarkModel).filter_by(bookmark_uuid=uuid).first()

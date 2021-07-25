@@ -14,6 +14,10 @@ auth = {
         'in': 'header',
         'name': 'X-API'
     },
+    'basic': {
+        'type': 'basic',
+        'in': 'header'
+    }
 }
 
 api = Api(app, authorizations=auth)

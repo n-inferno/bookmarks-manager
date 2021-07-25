@@ -10,5 +10,5 @@ class UserModel(db.Model):
     user_uuid = db.Column(db.String, nullable=False)
 
     @classmethod
-    def get_user(cls, uuid):
-        return cls.query.filter_by(user_uuid=uuid).first()
+    def get_user(cls, **kwargs):
+        return cls.query.filter_by(**kwargs).first()
