@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, g
 from flask_restx import Resource, reqparse
 from werkzeug.exceptions import NotFound, BadRequest
 
@@ -12,8 +12,6 @@ bookmarks_namespace = api.namespace('bookmarks', description='Operations with bo
 
 parser_link = reqparse.RequestParser()
 parser_link.add_argument('link', type=str, required=True, help='Link you want to save')
-
-bookmarks = []
 
 
 @bookmarks_namespace.route('')
@@ -35,7 +33,7 @@ class Bookmarks(Resource):
         _ = parser_link.parse_args().get('link')
         data = request.json
 
-        new = BookmarkModel(user_id=1, **data)
+        new = BookmarkModel(user_id=g.user_id, **data)
         db.session.add(new)
         db.session.commit()
         return new, 201

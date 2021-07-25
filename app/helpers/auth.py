@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 import jwt
-from flask import request
+from flask import request, g
 from jwt import ExpiredSignatureError
 from werkzeug.exceptions import Unauthorized, Forbidden
 from werkzeug.security import check_password_hash
@@ -40,6 +40,10 @@ def verify_token(token):
     user = UserModel.get_user(user_uuid=token_data.get('uuid'))
     if not user:
         raise Unauthorized()
+
+    g.user_uuid = user.user_uuid
+    g.user_login = user.login
+    g.user_id = user.user_id
 
     return True
 
